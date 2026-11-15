@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="CoCoMangas" />
+  <meta name="theme-color" content="#0a0a0c" />
+  <title>CoCoMangas — Электронное меню</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Status bar spacer for iPad -->
+    <div class="status-bar"></div>
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div class="logo-area">
+          <div class="logo-mark">CM</div>
+          <div class="logo-text">
+            <h1>CoCoMangas</h1>
+            <p class="tagline">Центр паровых коктейлей</p>
+          </div>
+        </div>
+        <div class="header-info">
+          <div class="info-item">
+            <span class="icon">📍</span>
+            <span>пр. Мира, 93В · 2 этаж</span>
+          </div>
+          <div class="info-item">
+            <span class="icon">🕐</span>
+            <span>ежедневно 10:00 – 02:00</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Category Navigation -->
+    <nav class="categories" id="categories">
+      <button class="cat-btn active" data-category="all">Всё</button>
+      <button class="cat-btn" data-category="hookah">Кальяны</button>
+      <button class="cat-btn" data-category="lemonades">Лимонады</button>
+      <button class="cat-btn" data-category="cocktails">Коктейли</button>
+      <button class="cat-btn" data-category="tea">Чаи</button>
+      <button class="cat-btn" data-category="mors">Морсы</button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="menu" id="menu">
+      <!-- Content will be rendered by JS -->
+    </main>
+
+    <!-- Bottom bar -->
+    <footer class="footer">
+      <a href="tel:+79869284044" class="footer-btn call">
+        <span class="footer-icon">📞</span>
+        <span>Позвонить</span>
+      </a>
+      <button class="footer-btn cart" id="cartBtn">
+        <span class="footer-icon">🛒</span>
+        <span>Заказ</span>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+    </footer>
+
+    <!-- Cart Modal -->
+    <div class="modal-overlay" id="cartModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>Ваш заказ</h2>
+          <button class="modal-close" id="closeCart">×</button>
+        </div>
+        <div class="modal-body" id="cartItems">
+          <p class="empty-cart">Заказ пока пуст</p>
+        </div>
+        <div class="modal-footer">
+          <div class="total">
+            <span>Итого:</span>
+            <span id="cartTotal">0 ₽</span>
+          </div>
+          <p class="cart-note">Покажите заказ официанту или позвоните</p>
+          <a href="tel:+79869284044" class="btn-primary">Позвонить и заказать</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Item Detail Modal -->
+    <div class="modal-overlay" id="itemModal">
+      <div class="modal item-modal">
+        <button class="modal-close" id="closeItem">×</button>
+        <div class="item-detail" id="itemDetail">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/store.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

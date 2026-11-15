@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0a0a0c" />
+  <title>CoCoMangas — Админка</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .admin-app { max-width: 1000px; margin: 0 auto; min-height: 100vh; }
+    .admin-header {
+      padding: 16px 20px; border-bottom: 1px solid rgba(201,168,76,0.2);
+      display: flex; align-items: center; justify-content: space-between; background: #121216;
+    }
+    .admin-header h1 { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--gold-light); margin: 0; }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links a {
+      font-size: 12px; color: var(--text-muted); text-decoration: none;
+      padding: 6px 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+    }
+    .login-box {
+      max-width: 360px; margin: 80px auto; padding: 28px;
+      background: var(--bg-card); border-radius: 16px; border: 1px solid rgba(201,168,76,0.2);
+    }
+    .login-box h2 { font-family: 'Playfair Display', serif; color: var(--gold-light); margin-bottom: 16px; font-size: 22px; }
+    .login-box input {
+      width: 100%; padding: 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12);
+      background: #0a0a0c; color: var(--text); font-size: 15px; margin-bottom: 12px;
+    }
+    .login-box button, .btn-save, .btn-add-item, .btn-secondary {
+      width: 100%; padding: 14px; border-radius: 10px; border: none;
+      background: linear-gradient(135deg, var(--gold), #a07830); color: #0a0a0c;
+      font-weight: 700; font-size: 15px; cursor: pointer;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.08); color: var(--text); margin-top: 8px;
+    }
+    .error-msg { color: #e08a8a; font-size: 13px; margin-bottom: 8px; display: none; }
+    .admin-body { padding: 20px; }
+    .cat-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .cat-tab {
+      padding: 8px 16px; border-radius: 100px; border: 1px solid rgba(201,168,76,0.25);
+      background: transparent; color: var(--text-muted); font-size: 13px; cursor: pointer;
+    }
+    .cat-tab.active { background: var(--gold); color: #0a0a0c; font-weight: 600; border-color: transparent; }
+    .item-row {
+      display: grid; grid-template-columns: 1fr 90px 90px 40px;
+      gap: 10px; align-items: center; padding: 12px;
+      background: var(--bg-card); border-radius: 12px; margin-bottom: 8px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .item-row.unavailable { opacity: 0.5; }
+    .item-row input[type="text"], .item-row input[type="number"] {
+      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+      background: #0a0a0c; color: var(--text); font-size: 14px;
+    }
+    .item-row .name-cell { display: flex; flex-direction: column; gap: 4px; }
+    .item-row .tags-line { font-size: 11px; color: var(--text-dim); }
+    .toggle-avail {
+      width: 40px; height: 24px; border-radius: 12px; border: none; cursor: pointer;
+      background: #4caf7a; position: relative;
+    }
+    .toggle-avail.off { background: #555; }
+    .toggle-avail::after {
+      content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+      border-radius: 50%; background: #fff; transition: transform 0.2s;
+    }
+    .toggle-avail.off::after { transform: translateX(16px); }
+    .toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .toolbar button { width: auto; padding: 10px 18px; font-size: 13px; }
+    .hint { font-size: 12px; color: var(--text-dim); margin-top: 20px; line-height: 1.5; }
+    @media (max-width: 600px) {
+      .item-row { grid-template-columns: 1fr 70px 70px 36px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-app">
+    <header class="admin-header">
+      <h1>Админка · CoCoMangas</h1>
+      <div class="nav-links">
+        <a href="../menu/index.html">Меню</a>
+        <a href="../terminal/index.html">Терминал</a>
+      </div>
+    </header>
+
+    <div id="loginScreen">
+      <div class="login-box">
+        <h2>Вход</h2>
+        <p class="error-msg" id="loginError">Неверный пароль</p>
+        <input type="password" id="passInput" placeholder="Пароль" autocomplete="current-password" />
+        <button id="loginBtn">Войти</button>
+        <p class="hint" style="margin-top:14px">Пароль по умолчанию: <strong>coco2026</strong></p>
+      </div>
+    </div>
+
+    <div id="adminScreen" style="display:none">
+      <div class="admin-body">
+        <div class="toolbar">
+          <button class="btn-add-item" id="addItemBtn" style="width:auto">+ Добавить позицию</button>
+          <button class="btn-secondary" id="resetBtn" style="width:auto">Сбросить меню</button>
+        </div>
+        <div class="cat-tabs" id="catTabs"></div>
+        <div id="itemsList"></div>
+        <p class="hint">
+          Переключатель справа — наличие (стоп-лист). Выключенная позиция не показывается гостям.<br>
+          Изменения сохраняются сразу. Чтобы гости на других устройствах видели обновления — разместите меню на хостинге и подключите облако (см. README).
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/store.js"></script>
+  <script>
+    let menu = getMenu();
+    let currentCat = Object.keys(menu)[0];
+
+    function showAdmin() {
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("adminScreen").style.display = "block";
+      renderTabs();
+      renderItems();
+    }
+
+    document.getElementById("loginBtn").addEventListener("click", tryLogin);
+    document.getElementById("passInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") tryLogin();
+    });
+
+    function tryLogin() {
+      const pass = document.getElementById("passInput").value;
+      if (checkAdminPassword(pass)) {
+        sessionStorage.setItem("cocomangas_admin", "1");
+        showAdmin();
+      } else {
+        document.getElementById("loginError").style.display = "block";
+      }
+    }
+
+    if (sessionStorage.getItem("cocomangas_admin") === "1") showAdmin();
+
+    function renderTabs() {
+      const el = document.getElementById("catTabs");
+      el.innerHTML = Object.keys(menu).map(key => {
+        const title = menu[key].title;
+        return `<button class="cat-tab ${key === currentCat ? "active" : ""}" data-cat="${key}">${title}</button>`;
+      }).join("");
+      el.querySelectorAll(".cat-tab").forEach(btn => {
+        btn.addEventListener("click", () => {
+          currentCat = btn.dataset.cat;
+          renderTabs();
+          renderItems();
+        });
+      });
+    }
+
+    function renderItems() {
+      const section = menu[currentCat];
+      if (!section) return;
+      const el = document.getElementById("itemsList");
+      el.innerHTML = section.items.map((item, idx) => `
+        <div class="item-row ${item.available === false ? "unavailable" : ""}" data-idx="${idx}">
+          <div class="name-cell">
+            <input type="text" class="inp-name" value="${escapeAttr(item.name)}" />
+            <span class="tags-line">${(item.tags || []).join(" · ") || "—"}</span>
+          </div>
+          <input type="number" class="inp-price" value="${item.price}" min="0" step="10" />
+          <button type="button" class="toggle-avail ${item.available === false ? "off" : ""}" title="Наличие"></button>
+          <button type="button" class="btn-secondary" style="width:40px;padding:8px;margin:0" data-del="${idx}" title="Удалить">✕</button>
+        </div>
+      `).join("");
+
+      el.querySelectorAll(".item-row").forEach(row => {
+        const idx = +row.dataset.idx;
+        row.querySelector(".inp-name").addEventListener("change", e => {
+          menu[currentCat].items[idx].name = e.target.value.trim();
+          saveMenu(menu);
+        });
+        row.querySelector(".inp-price").addEventListener("change", e => {
+          menu[currentCat].items[idx].price = Math.max(0, parseInt(e.target.value, 10) || 0);
+          saveMenu(menu);
+        });
+        row.querySelector(".toggle-avail").addEventListener("click", () => {
+          const item = menu[currentCat].items[idx];
+          item.available = item.available === false ? true : false;
+          saveMenu(menu);
+          renderItems();
+        });
+        row.querySelector("[data-del]").addEventListener("click", () => {
+          if (!confirm("Удалить позицию?")) return;
+          menu[currentCat].items.splice(idx, 1);
+          saveMenu(menu);
+          renderItems();
+        });
+      });
+    }
+
+    function escapeAttr(s) {
+      return String(s).replace(/"/g, "&quot;");
+    }
+
+    document.getElementById("addItemBtn").addEventListener("click", () => {
+      const name = prompt("Название новой позиции:");
+      if (!name || !name.trim()) return;
+      const price = parseInt(prompt("Цена (₽):", "0"), 10) || 0;
+      const id = currentCat[0] + "_" + Date.now();
+      menu[currentCat].items.push({
+        id, name: name.trim(), price, desc: "", tags: [], available: true
+      });
+      saveMenu(menu);
+      renderItems();
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      if (!confirm("Сбросить меню к исходному? Все правки будут потеряны.")) return;
+      resetMenu();
+      menu = getMenu();
+      currentCat = Object.keys(menu)[0];
+      renderTabs();
+      renderItems();
+    });
+  </script>
+</body>
+</html>

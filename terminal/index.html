@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0a0a0c" />
+  <title>CoCoMangas — Терминал официанта</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .terminal-app { max-width: 1100px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+    .terminal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      background: #121216;
+    }
+    .terminal-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; color: var(--gold-light); margin: 0;
+    }
+    .terminal-header .sub { font-size: 12px; color: var(--text-muted); }
+    .live-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #4caf7a; box-shadow: 0 0 8px #4caf7a;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .filters { display: flex; gap: 8px; padding: 12px 20px; flex-wrap: wrap; }
+    .filter-btn {
+      padding: 8px 16px; border-radius: 100px; border: 1px solid rgba(201,168,76,0.25);
+      background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 500; cursor: pointer;
+    }
+    .filter-btn.active { background: var(--gold); color: #0a0a0c; border-color: transparent; font-weight: 600; }
+    .orders-list { flex: 1; overflow-y: auto; padding: 12px 20px 40px; display: flex; flex-direction: column; gap: 14px; }
+    .order-card {
+      background: var(--bg-card); border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);
+      padding: 18px; transition: border-color 0.2s;
+    }
+    .order-card.status-new { border-color: rgba(201,168,76,0.5); box-shadow: 0 0 24px rgba(201,168,76,0.12); }
+    .order-card.status-accepted { border-color: rgba(76,175,122,0.4); }
+    .order-card.status-done { opacity: 0.55; }
+    .order-card.status-cancelled { opacity: 0.4; }
+    .order-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .order-table { font-size: 20px; font-weight: 700; color: var(--gold-light); }
+    .order-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .order-status-badge {
+      font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 100px; text-transform: uppercase;
+    }
+    .badge-new { background: rgba(201,168,76,0.2); color: var(--gold-light); }
+    .badge-accepted { background: rgba(76,175,122,0.2); color: #7dcea0; }
+    .badge-done { background: rgba(255,255,255,0.08); color: var(--text-muted); }
+    .badge-cancelled { background: rgba(196,92,92,0.2); color: #e08a8a; }
+    .order-items { margin-bottom: 14px; }
+    .order-item-row {
+      display: flex; justify-content: space-between; padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 14px;
+    }
+    .order-item-row:last-child { border-bottom: none; }
+    .order-item-qty { color: var(--gold); font-weight: 600; margin-right: 8px; }
+    .order-comment {
+      background: rgba(201,168,76,0.08); border-radius: 10px; padding: 10px 12px;
+      font-size: 13px; color: var(--text-muted); margin-bottom: 14px;
+    }
+    .order-total { font-size: 16px; font-weight: 600; color: var(--gold); margin-bottom: 14px; }
+    .order-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .order-actions button {
+      flex: 1; min-width: 100px; padding: 12px; border-radius: 10px; border: none;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .btn-accept { background: rgba(76,175,122,0.2); color: #7dcea0; }
+    .btn-accept:active { background: #4caf7a; color: #fff; }
+    .btn-done { background: rgba(201,168,76,0.2); color: var(--gold-light); }
+    .btn-done:active { background: var(--gold); color: #0a0a0c; }
+    .btn-cancel { background: rgba(196,92,92,0.15); color: #e08a8a; }
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--text-dim); font-size: 15px;
+    }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links a {
+      font-size: 12px; color: var(--text-muted); text-decoration: none;
+      padding: 6px 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+    }
+    .nav-links a:hover { color: var(--gold); border-color: var(--gold-dim); }
+    .sound-toggle {
+      background: transparent; border: 1px solid rgba(255,255,255,0.15);
+      color: var(--text-muted); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal-app">
+    <header class="terminal-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="live-dot" title="Онлайн"></div>
+        <div>
+          <h1>Терминал официанта</h1>
+          <div class="sub">CoCoMangas · заказы с меню</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="sound-toggle" id="soundBtn">🔔 Звук вкл</button>
+        <div class="nav-links">
+          <a href="../menu/index.html">Меню</a>
+          <a href="../admin/index.html">Админка</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="filters" id="filters">
+      <button class="filter-btn active" data-filter="active">Активные</button>
+      <button class="filter-btn" data-filter="new">Новые</button>
+      <button class="filter-btn" data-filter="accepted">В работе</button>
+      <button class="filter-btn" data-filter="done">Готовые</button>
+      <button class="filter-btn" data-filter="all">Все</button>
+    </div>
+
+    <div class="orders-list" id="ordersList">
+      <div class="empty-state">Ожидание заказов…</div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/store.js"></script>
+  <script>
+    let filter = "active";
+    let soundOn = true;
+    let knownIds = new Set();
+
+    const statusLabel = {
+      new: "Новый",
+      accepted: "В работе",
+      done: "Готов",
+      cancelled: "Отменён"
+    };
+
+    function playNotify() {
+      if (!soundOn) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = 880;
+        g.gain.value = 0.08;
+        o.start();
+        setTimeout(() => { o.frequency.value = 1100; }, 100);
+        setTimeout(() => { o.stop(); ctx.close(); }, 250);
+      } catch (e) {}
+    }
+
+    function formatTime(iso) {
+      const d = new Date(iso);
+      return d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function renderOrders(orders) {
+      // detect new
+      const currentIds = new Set(orders.map(o => o.id));
+      orders.forEach(o => {
+        if (o.status === "new" && !knownIds.has(o.id) && knownIds.size > 0) {
+          playNotify();
+        }
+      });
+      knownIds = currentIds;
+
+      let list = orders;
+      if (filter === "active") list = orders.filter(o => o.status === "new" || o.status === "accepted");
+      else if (filter !== "all") list = orders.filter(o => o.status === filter);
+
+      const el = document.getElementById("ordersList");
+      if (!list.length) {
+        el.innerHTML = `<div class="empty-state">${filter === "active" || filter === "new" ? "Нет новых заказов" : "Пусто"}</div>`;
+        return;
+      }
+
+      el.innerHTML = list.map(o => {
+        const itemsHtml = o.items.map(i => {
+          const vol = (i.tags || []).find(t => t.includes("мл"));
+          return `<div class="order-item-row">
+            <span><span class="order-item-qty">${i.qty}×</span>${i.name}${vol ? " · " + vol : ""}</span>
+            <span>${i.price * i.qty} ₽</span>
+          </div>`;
+        }).join("");
+
+        const actions = [];
+        if (o.status === "new") {
+          actions.push(`<button class="btn-accept" data-id="${o.id}" data-status="accepted">Принять</button>`);
+          actions.push(`<button class="btn-cancel" data-id="${o.id}" data-status="cancelled">Отменить</button>`);
+        } else if (o.status === "accepted") {
+          actions.push(`<button class="btn-done" data-id="${o.id}" data-status="done">Готово</button>`);
+          actions.push(`<button class="btn-cancel" data-id="${o.id}" data-status="cancelled">Отменить</button>`);
+        }
+
+        return `
+          <article class="order-card status-${o.status}">
+            <div class="order-top">
+              <div>
+                <div class="order-table">Стол ${o.table}</div>
+                <div class="order-meta">${formatTime(o.createdAt)} · #${o.id.slice(-6)}</div>
+              </div>
+              <span class="order-status-badge badge-${o.status}">${statusLabel[o.status]}</span>
+            </div>
+            <div class="order-items">${itemsHtml}</div>
+            ${o.comment ? `<div class="order-comment">💬 ${o.comment}</div>` : ""}
+            <div class="order-total">Итого: ${o.total} ₽</div>
+            ${actions.length ? `<div class="order-actions">${actions.join("")}</div>` : ""}
+          </article>
+        `;
+      }).join("");
+
+      el.querySelectorAll("[data-status]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          updateOrderStatus(btn.dataset.id, btn.dataset.status);
+          renderOrders(getOrders());
+        });
+      });
+    }
+
+    document.getElementById("filters").addEventListener("click", e => {
+      const btn = e.target.closest(".filter-btn");
+      if (!btn) return;
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      filter = btn.dataset.filter;
+      renderOrders(getOrders());
+    });
+
+    document.getElementById("soundBtn").addEventListener("click", () => {
+      soundOn = !soundOn;
+      document.getElementById("soundBtn").textContent = soundOn ? "🔔 Звук вкл" : "🔕 Звук выкл";
+    });
+
+    // Initial + subscribe (wait for Firebase)
+    (async () => {
+      if (window.cocoStoreReady && typeof window.cocoStoreReady.then === "function") {
+        await window.cocoStoreReady;
+      }
+      knownIds = new Set(getOrders().map(o => o.id));
+      subscribeOrders(renderOrders);
+    })();
+  </script>
+</body>
+</html>
