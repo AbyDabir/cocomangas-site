@@ -3,13 +3,13 @@
    Этот же файл должен быть одинаковым в menu, admin и terminal. */
 
 window.FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCoopPp4z45YaAHHf6duOmyRBONYefhkuU",
+  authDomain: "cocomangas-menu.firebaseapp.com",
+  databaseURL: "https://cocomangas-menu-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "cocomangas-menu",
+  storageBucket: "cocomangas-menu.firebasestorage.app",
+  messagingSenderId: "120319416322",
+  appId: "1:120319416322:web:60d00078474af6511caf1b"
 };
 
 window.USE_FIREBASE = true;
